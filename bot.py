@@ -6,7 +6,7 @@ TOKEN = "7965432987:AAFQqeT79_vO6YFh3s2hXTZxbJStLJ9HHe0"
 # 🔹 ID канала, например "-1002468008518"
 CHANNEL_ID = "-1002468008518"
 # 🔹 Твой личный Telegram ID (узнать можно через @userinfobot)
-ADMIN_ID = "752269181
+ADMIN_ID = "752269181"
 
 
 bot = Bot(token=TOKEN)
@@ -18,7 +18,7 @@ def handle_message(update: Update, context: CallbackContext):
     question = update.message.text
 
     # Отправляем вопрос автору (тебе)
-    bot.send_message(chat_id=ADMIN_ID, text=f"❓ Новый вопрос:\n{question}\n\nОтветь мне в ЛС, чтобы отправить ответ в канал!")
+    bot.send_message(chat_id=752269181, text=f"❓ Новый вопрос:\n{question}\n\nОтветь мне в ЛС, чтобы отправить ответ в канал!")
 
     # Отвечаем пользователю
     update.message.reply_text("Спасибо! Ваш вопрос передан.")
