@@ -1,6 +1,6 @@
 import os
 from telegram import Bot, Update
-from telegram.constants import ParseMode
+from telegram import constants  # Исправленный импорт
 from telegram.ext import Application, MessageHandler, CommandHandler, CallbackContext, filters
 
 # 🔹 Загружаем переменные окружения (используйте свои значения)
@@ -43,7 +43,7 @@ async def handle_admin_reply(update: Update, context: CallbackContext):
     )
 
     # Отправляем ответ в канал
-    await bot.send_message(chat_id=CHANNEL_ID, text=formatted_message, parse_mode=ParseMode.MARKDOWN)
+    await bot.send_message(chat_id=CHANNEL_ID, text=formatted_message, parse_mode=constants.ParseMode.MARKDOWN)  # Исправленный ParseMode
 
     await update.message.reply_text("Ответ отправлен в канал!")
 
