@@ -1,2 +1,1 @@
-     python-telegram-bot
-     python-dotenv
+     worker: python your_script_name.py
