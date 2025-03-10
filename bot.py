@@ -1,6 +1,6 @@
 import os
 from telegram import Bot, Update
-from telegram import constants  # Исправленный импорт
+from telegram import constants
 from telegram.ext import Application, MessageHandler, CommandHandler, CallbackContext, filters
 
 # 🔹 Загружаем переменные окружения (используйте свои значения)
@@ -13,19 +13,17 @@ bot = Bot(token=TOKEN)
 
 # 🔹 Функция обработки команды /start
 async def start(update: Update, context: CallbackContext):
-    await update.message.reply_text("**✨ Привет, искатель тайн! ✨**
-                                    
-**💬 Отправляй свой вопрос, пока бот не ушёл в творческий кризис!**
-
-(Шанс на ответ +100%, если подойдёшь с душой, а не с "когда прода?" 😏)
-
-**✨ Дерзай! Кто спрашивает — тот познаёт!**")
+    await update.message.reply_text("**✨ Привет, искатель тайн! ✨\n\n💬 Отправляй свой вопрос, пока бот не ушёл в творческий кризис!\n(Шанс на ответ +100%, если подойдёшь с душой, а не с «когда прода?» 😏)\n\n✨ Дерзай! Кто спрашивает — тот познаёт!**")
 
 # 🔹 Функция обработки сообщений от пользователей
 async def handle_message(update: Update, context: CallbackContext):
+    # Проверяем, что сообщение не от администратора
+    if str(update.message.from_user.id) == ADMIN_ID:
+        return  # Игнорируем сообщения от администратора
+
     question = update.message.text
 
-    # Отправляем вопрос автору (тебе)
+    # Отправляем вопрос администратору
     await bot.send_message(chat_id=ADMIN_ID, text=f"💬 Новый вопрос:\n{question}\n\nОтветь мне в ЛС, чтобы отправить ответ в канал!")
 
     # Отвечаем пользователю
@@ -36,6 +34,10 @@ async def handle_message(update: Update, context: CallbackContext):
 
 # 🔹 Функция обработки ответов от администратора
 async def handle_admin_reply(update: Update, context: CallbackContext):
+    # Проверяем, что сообщение от администратора
+    if str(update.message.from_user.id) != ADMIN_ID:
+        return  # Игнорируем сообщения не от администратора
+
     answer = update.message.text
     question = context.user_data.get('last_question', 'Неизвестный вопрос')
 
@@ -49,7 +51,7 @@ async def handle_admin_reply(update: Update, context: CallbackContext):
     )
 
     # Отправляем ответ в канал
-    await bot.send_message(chat_id=CHANNEL_ID, text=formatted_message, parse_mode=constants.ParseMode.MARKDOWN)  # Исправленный ParseMode
+    await bot.send_message(chat_id=CHANNEL_ID, text=formatted_message, parse_mode=constants.ParseMode.MARKDOWN)
 
     await update.message.reply_text("Ответ отправлен в канал!")
 
