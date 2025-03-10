@@ -1,8 +1,7 @@
 import os
-from flask import Flask, request
 from telegram import Bot, Update
-from telegram.ext import Application, MessageHandler, CommandHandler, CallbackContext, filters
 from telegram import constants
+from telegram.ext import Application, MessageHandler, CommandHandler, CallbackContext, filters
 
 # 🔹 Загружаем переменные окружения (используйте свои значения)
 TOKEN = "7965432987:AAFQqeT79_vO6YFh3s2hXTZxbJStLJ9HHe0"  # Токен вашего бота от BotFather
@@ -12,16 +11,13 @@ ADMIN_ID = "752269181"  # Ваш личный Telegram ID (узнать можн
 # Создаём объект бота
 bot = Bot(token=TOKEN)
 
-# Инициализация Flask
-app = Flask(__name__)
-
 # 🔹 Функция обработки команды /start
 async def start(update: Update, context: CallbackContext):
     start_message = (
-        r"**✨ Привет, искатель тайн! ✨**\n\n"
-        r"_💬 Отправляй свой вопрос, пока бот не ушёл в творческий кризис!_\n\n"
-        r"(Шанс на ответ +100%, если подойдёшь с душой, а не с «когда прода?» 😏)\n\n"
-        r"**🔥 Дерзай! Кто спрашивает — тот познаёт!**"
+        "**✨ Привет, искатель тайн! ✨**\n\n"
+        "_💬 Отправляй свой вопрос, пока бот не ушёл в творческий кризис!_\n\n"
+        "(Шанс на ответ +100%, если подойдёшь с душой, а не с «когда прода?» 😏)\n\n"
+        "**🔥 Дерзай! Кто спрашивает — тот познаёт!**"
     )
     await update.message.reply_text(start_message, parse_mode=constants.ParseMode.MARKDOWN)
 
@@ -65,7 +61,7 @@ async def handle_admin_reply(update: Update, context: CallbackContext):
 
     await update.message.reply_text("Ответ отправлен в канал!")
 
-# Создаём приложение бота
+# 🔹 Создаём приложение бота
 application = Application.builder().token(TOKEN).build()
 
 # 🔹 Добавляем обработчики команд и сообщений
@@ -73,19 +69,6 @@ application.add_handler(CommandHandler("start", start))
 application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 application.add_handler(MessageHandler(filters.TEXT & filters.ChatType.PRIVATE, handle_admin_reply))
 
-# Маршрут для вебхука
-@app.route("/webhook", methods=["POST"])
-def webhook():
-    update = Update.de_json(request.get_json(force=True), bot)
-    application.process_update(update)
-    return "ok"
-
-# Установка вебхука
-async def set_webhook():
-    await bot.set_webhook("https://your-render-url.onrender.com/webhook")
-
-# Запуск Flask
+# 🔹 Запускаем бота
 if __name__ == "__main__":
-    import asyncio
-    asyncio.run(set_webhook())
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 10000)))
+    application.run_polling()
