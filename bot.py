@@ -1,6 +1,6 @@
-from telegram import ParseMode
 from telegram import Bot, Update
-from telegram.ext import Updater, MessageHandler, Filters, CommandHandler, CallbackContext
+from telegram.constants import ParseMode
+from telegram.ext import Application, MessageHandler, CommandHandler, CallbackContext, filters
 
 # 🔹 Твой токен от BotFather
 TOKEN = "7965432987:AAFQqeT79_vO6YFh3s2hXTZxbJStLJ9HHe0"
@@ -9,25 +9,28 @@ CHANNEL_ID = "-1002468008518"
 # 🔹 Твой личный Telegram ID (узнать можно через @userinfobot)
 ADMIN_ID = "752269181"
 
-
+# Создаём объект бота
 bot = Bot(token=TOKEN)
 
-def start(update: Update, context: CallbackContext):
-    update.message.reply_text("Привет! Отправь мне анонимный вопрос, и я передам его автору.")
+# Функция обработки команды /start
+async def start(update: Update, context: CallbackContext):
+    await update.message.reply_text("Привет! Отправь мне анонимный вопрос, и я передам его автору.")
 
-def handle_message(update: Update, context: CallbackContext):
+# Функция обработки сообщений от пользователей
+async def handle_message(update: Update, context: CallbackContext):
     question = update.message.text
 
     # Отправляем вопрос автору (тебе)
-    bot.send_message(chat_id=752269181, text=f"❓ Новый вопрос:\n{question}\n\nОтветь мне в ЛС, чтобы отправить ответ в канал!")
+    await bot.send_message(chat_id=ADMIN_ID, text=f"❓ Новый вопрос:\n{question}\n\nОтветь мне в ЛС, чтобы отправить ответ в канал!")
 
     # Отвечаем пользователю
-    update.message.reply_text("Спасибо! Ваш вопрос передан.")
+    await update.message.reply_text("Спасибо! Ваш вопрос передан.")
 
     # Сохраняем вопрос в контексте
     context.user_data['last_question'] = question
 
-def handle_admin_reply(update: Update, context: CallbackContext):
+# Функция обработки ответов от администратора
+async def handle_admin_reply(update: Update, context: CallbackContext):
     answer = update.message.text
     question = context.user_data.get('last_question', 'Неизвестный вопрос')
 
@@ -40,17 +43,18 @@ def handle_admin_reply(update: Update, context: CallbackContext):
         f"**💌 Тоже есть вопрос? Бот всегда ждёт! 👉 @ask_maffi_bot**"
     )
 
-    # Отправляем в канал
-    bot.send_message(chat_id=-1002468008518, text=formatted_message, parse_mode=ParseMode.MARKDOWN)
+    # Отправляем ответ в канал
+    await bot.send_message(chat_id=CHANNEL_ID, text=formatted_message, parse_mode=ParseMode.MARKDOWN)
 
-    update.message.reply_text("Ответ отправлен в канал!")
+    await update.message.reply_text("Ответ отправлен в канал!")
 
-updater = Updater(TOKEN, use_context=True)
-dp = updater.dispatcher
+# Создаём приложение бота
+application = Application.builder().token(TOKEN).build()
 
-dp.add_handler(CommandHandler("start", start))
-dp.add_handler(MessageHandler(Filters.text & ~Filters.command, handle_message))
-dp.add_handler(MessageHandler(Filters.text & Filters.chat(int(ADMIN_ID)), handle_admin_reply))
+# Добавляем обработчики команд и сообщений
+application.add_handler(CommandHandler("start", start))
+application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+application.add_handler(MessageHandler(filters.TEXT & filters.ChatType.PRIVATE, handle_admin_reply))
 
-updater.start_polling()
-updater.idle()
+# Запускаем бота
+application.run_polling()
